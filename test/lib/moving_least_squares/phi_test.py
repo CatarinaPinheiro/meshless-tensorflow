@@ -17,8 +17,10 @@ class TestMovingLeastSquares (unittest.TestCase):
         approx = mls.approximate(np.array(data[:, 1]))
 
         sess = tf.Session()
-        sess.run(tf.global_variables_initializer())
+        value = sess.run(approx)
 
-        self.assertTrue(np.round(sess.run(approx), 2)[0][0] == 0.08)
+        print(value)
+
+        self.assertTrue(np.round(value, 2)[0][0] == 0.08)
 if __name__ == '__main__':
     unittest.main()
