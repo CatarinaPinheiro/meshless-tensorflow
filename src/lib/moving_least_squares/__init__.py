@@ -18,25 +18,24 @@ class MovingLeastSquares():
 
     def AB(self, r):
         def inside_support(p):
-            return np.linalg.norm(p - self.point, name="support_distance_to_center") < r
+            return np.linalg.norm(p - self.point) < r
 
         P = [tf.cond(inside_support(p), lambda: self.TFs[i][0], lambda: self.TFs[i][1],name="is_inside_support") for i, p in enumerate(self.data)]
-        dist_function = lambda p: tf.norm(tf.subtract(self.data, p))
-        distances = [dist_function(p) for p in self.point]
-        B = tf.linalg.matmul(tf.transpose(P,name="Pt"), tf.diag([gaussian_with_radius(dist, r) for dist in distances],name="weights"),name="B")
+        distances = [tf.norm(tf.subtract(d, self.point)) for d in self.data]
+        B = tf.linalg.matmul(tf.transpose(P, name="Pt"), tf.diag([gaussian_with_radius(dist, r) for dist in distances],name="weights"),name="B")
         A = tf.linalg.matmul(B, P,name="A")
         return A, B
 
     @property
     def phi(self):
         pt = self.base.basis
-        condition = lambda ri: tf.linalg.det(self.AB(ri)[0]) < tf.constant(1e-6,dtype=tf.float64)
+        condition = lambda ri: tf.linalg.det(self.AB(ri)[0], name = 'det.') < tf.constant(1e-6, dtype=tf.float64)
         def increase_r(ri):
             return ri * 1.05
         r = tf.while_loop(condition, increase_r, [self.r_min], name="phi_find_r_loop")
 
         A, B = self.AB(r)
-        return tf.linalg.matmul([pt] ,tf.linalg.matmul( tf.matrix_inverse(A) , B,name="invA_B"),name="phi")
+        return tf.linalg.matmul([pt], tf.linalg.matmul( tf.matrix_inverse(A) , B,name="invA_B"),name="phi")
 
     def set_point(self, point):
         self.point = point

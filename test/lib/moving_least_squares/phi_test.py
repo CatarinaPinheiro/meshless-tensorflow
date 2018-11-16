@@ -19,6 +19,7 @@ class TestMovingLeastSquares (unittest.TestCase):
         sess = tf.Session()
         value = sess.run(approx)
 
+
         print(value)
 
         self.assertTrue(np.round(value, 2)[0][0] == 0.08)
